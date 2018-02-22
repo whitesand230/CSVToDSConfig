@@ -6,24 +6,73 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using CommandLine;
 
 namespace CSVToDSConfig
 {
     class Program
     {
+        private static Options _options = new Options();
         static void Main(string[] args)
         {
+            CommandLine.Parser.Default.ParseArguments<Options>(args)
+                       .WithParsed<Options>(opts => RunOptionsAndReturnExitCode(opts))
+                       .WithNotParsed<Options>((errs) => HandleParseError(errs));
             //readCSV()
-            string csvPath = @"C:\Users\jamel.ahmad\Desktop\SampleCSV_update.csv"; // args[0]
+            //string csvPath = @"C:\Users\jamel.ahmad\Desktop\SampleCSV_update.csv"; // args[0]
             //string csvPath = arg[0]; //args[0]
             //string objectType = args[1]; //args[1]
             //string schemaName = args[2]; //args[2]
             //string outputFile = args[3]; //args[3]
             Console.WriteLine("Starting Program...");
             //DataTable csvData = GetDataTableFromCSVFile(csvPath, false, true);
-            DataTable csvData = GetDataTableFromCSVFile(csvPath, true, false);
+            //DataTable csvData = GetDataTableFromCSVFile(csvPath, true, false);
+            CreateCSVFile(_options);
             Console.WriteLine("Finished Reading CSV File");
         }
+
+        private static void CreateCSVFile(Options options){
+
+            string input = options.inputFilePath;
+            string output = options.outputFilePath;
+            string objectType = options.objectType;
+            string schemaName = options.schemaName;
+
+            //DataTable csvData = new DataTable();
+
+            try
+            {
+                using (TextFieldParser csvReader = new TextFieldParser(input))
+                {
+                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(output))
+                    {
+                        csvReader.SetDelimiters(new string[] {","});
+                        csvReader.HasFieldsEnclosedInQuotes = true;
+
+                        //read columns headers
+                        csvReader.ReadFields();
+
+                        while(!csvReader.EndOfData)
+                        {
+                            string[] fieldData = csvReader.ReadFields();
+
+                            string description = createDescriptionString(fieldData[4]);
+                            string type = createTypeString(fieldData[8]);
+
+                        }
+                    } 
+                }
+
+            }
+            catch (Exception e){
+                Console.WriteLine("ERROR FOUND!!!");
+                Console.WriteLine("Error Message: " + e.Message);
+            }
+        }
+
+
+
+
 
         /**
          * [0] = scim attribute
@@ -117,6 +166,18 @@ namespace CSVToDSConfig
             return csvData;
         }
 
+        #region Util Functions
+        private static void HandleParseError(IEnumerable<Error> errs)
+        {
+            //todo
+            throw new NotImplementedException();
+        }
+
+        private static void RunOptionsAndReturnExitCode(Options opts)
+        {
+            _options = opts;
+        }
+
         private static string createTypeString(string v)
         {
             string result;
@@ -152,6 +213,14 @@ namespace CSVToDSConfig
                     break;
             }
             return result;
+        }
+
+        private static string createDescriptionString(string v)
+        {
+            string description = "";
+            if (v != string.Empty)
+                description = v;
+            return description;
         }
 
         private static string createSCIMAttributeOptionString(string[] fieldData)
@@ -196,5 +265,6 @@ namespace CSVToDSConfig
             }
             return constraints;
         }
+        #endregion
     }
 }
