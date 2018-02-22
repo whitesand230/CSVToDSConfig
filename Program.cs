@@ -20,8 +20,7 @@ namespace CSVToDSConfig
                        .WithNotParsed<Options>(errs => HandleParseError(errs));
             
             Console.WriteLine("Starting Program...");
-            //DataTable csvData = GetDataTableFromCSVFile(csvPath, false, true);
-            //DataTable csvData = GetDataTableFromCSVFile(csvPath, true, false);
+
             CreateCSVFile(_options);
             Console.WriteLine("Finished Reading CSV File");
         }
@@ -32,8 +31,6 @@ namespace CSVToDSConfig
             string output = options.outputFilePath;
             string objectType = options.objectType;
             string schemaName = options.schemaName;
-
-            //DataTable csvData = new DataTable();
 
             try
             {
@@ -89,24 +86,6 @@ namespace CSVToDSConfig
                 Console.WriteLine("Error Message: " + e.Message);
             }
         }
-
-
-
-
-
-        /**
-         * [0] = scim attribute
-         * [1] = directory attribute
-         * [2] = type -- null,simple,complex,sub
-         * [3] = sub-attributes
-         * [4] = description
-         * [5] = required
-         * [6] = Multivalue
-         * [7] = searchable
-         * [8] = format
-         * [9] = Constraints (Should be parsed by ;)
-         */
-
 
         #region Util Functions
         private static void HandleParseError(IEnumerable<Error> errs)
