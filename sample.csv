@@ -1,0 +1,5 @@
+﻿scimAttributeName,directoryAttributeName,isSubAttribute,subAttributeName,description,isRequired,isMultivalue,isSearchable,format,constraints
+uid,uid,N,,This is the username for the user,Y,N,Y,string,
+uniqueID,UniqueID,N,,,N,N,Y,string,
+address,Address,N,,This is the global address,N,Y,N,complex,
+address,Address,Y,type,Address Type,Y,N,N,string,
