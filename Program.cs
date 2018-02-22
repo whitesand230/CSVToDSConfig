@@ -15,15 +15,10 @@ namespace CSVToDSConfig
         private static Options _options = new Options();
         static void Main(string[] args)
         {
-            CommandLine.Parser.Default.ParseArguments<Options>(args)
+            Parser.Default.ParseArguments<Options>(args)
                        .WithParsed<Options>(opts => RunOptionsAndReturnExitCode(opts))
-                       .WithNotParsed<Options>((errs) => HandleParseError(errs));
-            //readCSV()
-            //string csvPath = @"C:\Users\jamel.ahmad\Desktop\SampleCSV_update.csv"; // args[0]
-            //string csvPath = arg[0]; //args[0]
-            //string objectType = args[1]; //args[1]
-            //string schemaName = args[2]; //args[2]
-            //string outputFile = args[3]; //args[3]
+                       .WithNotParsed<Options>(errs => HandleParseError(errs));
+            
             Console.WriteLine("Starting Program...");
             //DataTable csvData = GetDataTableFromCSVFile(csvPath, false, true);
             //DataTable csvData = GetDataTableFromCSVFile(csvPath, true, false);
@@ -56,10 +51,35 @@ namespace CSVToDSConfig
                         {
                             string[] fieldData = csvReader.ReadFields();
 
+                            string dsconfig1 = "";
+                            string dsconfig2 = "";
                             string description = createDescriptionString(fieldData[4]);
                             string type = createTypeString(fieldData[8]);
+                            string constraints = createConstraintList(fieldData[9]);
 
+                            //found subattribute
+                            if(fieldData[2].Equals("Y") || fieldData[2].Equals("y")){
+                                dsconfig1 = string.Format("dsconfig create-scim-subattribute --schema-name {0} --attribute-name {1} " +
+                                                          "--subattribute-name {2} {3} {4} {5} --reason {6}"
+                                                          ,schemaName,fieldData[0],fieldData[3]
+                                                          ,createSCIMAttributeOptionString(fieldData),type,constraints,"none");
+                                dsconfig1.Replace("  ", string.Empty);
+                                file.WriteLine(dsconfig1);
+                            }
+                            else
+                            {
+                                dsconfig1 = string.Format("dsconfig create-scim-attribute --schema-name {0} --attribute-name {1} {2} {3} {4} {5} --reason {6}"
+                                                         ,schemaName,fieldData[0],description,type,createSCIMAttributeOptionString(fieldData), constraints,"none");
+                                dsconfig1.Replace("  ",string.Empty);
+                                dsconfig2 = string.Format("dsconfig create-store-adapter-mapping --type-name {0} --mapping-name {1} --set scim-resource-type-attribute:{1} --set-store-adapter-attribute:{2} {3} --reason none"
+                                                          , objectType, fieldData[0], fieldData[1], createStoreAdapterMappingOptionString(fieldData));
+                                dsconfig2.Replace("  ",string.Empty);
+                                file.WriteLine(dsconfig1);
+                                file.WriteLine(dsconfig2);
+                                file.WriteLine();
+                            }
                         }
+                        file.Close();
                     } 
                 }
 
@@ -86,91 +106,12 @@ namespace CSVToDSConfig
          * [8] = format
          * [9] = Constraints (Should be parsed by ;)
          */
-        private static DataTable GetDataTableFromCSVFile(string csvPath, Boolean create, Boolean delete)
-        {
-            string csvPathTest = @"C:\Users\jamel.ahmad\Desktop\SampleCSV_update.csv"; // args[0]
-            string objectType = "Consumers"; //args[1]
-            string schemaName = "urn:pingidentity:schemas:ciam:Consumer:1.0"; //args[2]
-            string outputFile = @"C:\Users\jamel.ahmad\Desktop\output.dsconfig"; //args[3]
 
-            DataTable csvData = new DataTable();
-            try
-            {
-                using (TextFieldParser csvReader = new TextFieldParser(csvPathTest))
-                {
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(outputFile))
-                    {
-                        csvReader.SetDelimiters(new string[] { "," });
-                        csvReader.HasFieldsEnclosedInQuotes = true;
-                        string[] colFields = csvReader.ReadFields();
-
-                        foreach (string column in colFields)
-                        {
-                            DataColumn datacolumn = new DataColumn(column);
-                            datacolumn.AllowDBNull = true;
-                            csvData.Columns.Add(datacolumn);
-                        }
-
-                        while (!csvReader.EndOfData)
-                        {
-                            string[] fieldData = csvReader.ReadFields();
-                            string options = createSCIMAttributeOptionString(fieldData);
-                            string options_2 = createStoreAdapterMappingOptionString(fieldData);
-                            string type = createTypeString(fieldData[8]);
-                            string constraints = createConstraintList(fieldData[9]);
-
-
-                            if (fieldData[2].Equals("sub"))
-                            {
-                                if (!String.IsNullOrEmpty(constraints))
-                                {
-                                    string dsconfig1 = string.Format("dsconfig create-scim-subattribute --schema-name {0} --attribute-name {1} --subattribute-name {2} {3} {4} {5} --reason none", schemaName, fieldData[0], fieldData[3], options, type, constraints);
-                                    file.WriteLine(dsconfig1);
-                                }
-                                else
-                                {
-                                    string dsconfig1 = string.Format("dsconfig create-scim-subattribute --schema-name {0} --attribute-name {1} --subattribute-name {2} {3} {4} --reason none", schemaName, fieldData[0], fieldData[3], options, type);
-                                    file.WriteLine(dsconfig1);
-                                }
-
-                            }
-                            //normal attributes
-                            else
-                            {
-                                string dsconfig1;
-                                string dsconfig2;
-
-                                if (!String.IsNullOrEmpty(constraints))
-                                {
-                                    dsconfig1 = string.Format("dsconfig create-scim-attribute --schema-name {0} --attribute-name {1} --set \"description:{2}\" {3} {4} {5} --reason none", schemaName, fieldData[0], fieldData[4], type, options, constraints);
-                                }
-                                else
-                                {
-                                    dsconfig1 = string.Format("dsconfig create-scim-attribute --schema-name {0} --attribute-name {1} --set \"description:{2}\" {3} {4} --reason none", schemaName, fieldData[0], fieldData[4], type, options);
-                                }
-                                dsconfig2 = string.Format("dsconfig create-store-adapter-mapping --type-name {0} --mapping-name {1} --set scim-resource-type-attribute:{1} --set store-adapter-attribute:{2} {3} --reason none", objectType, fieldData[0], fieldData[1], options_2);
-                                file.WriteLine(dsconfig1);
-                                file.WriteLine(dsconfig2);
-                                file.WriteLine();
-                            }
-                        }
-                        file.Close();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                //ToDo
-            }
-
-            return csvData;
-        }
 
         #region Util Functions
         private static void HandleParseError(IEnumerable<Error> errs)
         {
             //todo
-            throw new NotImplementedException();
         }
 
         private static void RunOptionsAndReturnExitCode(Options opts)
@@ -219,7 +160,7 @@ namespace CSVToDSConfig
         {
             string description = "";
             if (v != string.Empty)
-                description = v;
+                description = "--set \"description:\"" + v;
             return description;
         }
 

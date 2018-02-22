@@ -11,9 +11,11 @@ namespace CSVToDSConfig
         [Option('o', "outputFilePath", Required = true, HelpText = "Output file for the dsconfig commands")]
         public string outputFilePath { get; set; }
 
+        //Default = "Users"
         [Option('t', "objectType", Required = false, HelpText = "PingDirectory Object Type", Default = "Users")]
         public string objectType { get; set; }
 
+        //Default = "urn:pingidentity:schemas:ciam:User:1.0"
         [Option('s', "schemaName", Required = false, HelpText = "PingDirectory Schema Object", Default = "urn:pingidentity:schemas:ciam:User:1.0")]
         public string schemaName { get; set; }
 
