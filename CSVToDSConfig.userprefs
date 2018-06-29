@@ -1,0 +1,18 @@
+﻿<Properties StartupConfiguration="{B03954AE-80F1-4C8E-A32C-8563B0D9AE76}|Default">
+  <MonoDevelop.Ide.ItemProperties.CSVToDSConfig PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="CSVToDSConfig Status">
+    <Files>
+      <File FileName="CSVToDSConfig/Program.cs" Line="88" Column="10" />
+      <File FileName="CSVToDSConfig/README.md" Line="1" Column="1" />
+      <File FileName="CSVToDSConfig Status" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/whitesand/Projects/CSVToDSConfig/CSVToDSConfig/Program.cs" relfile="CSVToDSConfig/Program.cs" line="18" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>
